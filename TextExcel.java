@@ -5,14 +5,16 @@ import java.util.Scanner;
 
 public class TextExcel
 {
-
+public static int CELL_SPACE = 10;
 	public static void main(String[] args)
 	{
-		Scanner scanner = new Scanner(System.in);
+		Scanner scanner = new Scanner(System.in);;
+		Spreadsheet spreadsheet = new Spreadsheet();
+		System.out.println(spreadsheet.getGridText());
 		String input;
 		do {
 			input = scanner.nextLine();
-
+			System.out.println(spreadsheet.processCommand(input));
 		}while (!input.equalsIgnoreCase("quit"));
 
 
