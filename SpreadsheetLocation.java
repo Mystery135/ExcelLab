@@ -7,7 +7,7 @@ public class SpreadsheetLocation implements Location {
     public SpreadsheetLocation(String loc){
         this.loc = loc;
         row = loc.toUpperCase().toCharArray()[0]-65;
-        col = Integer.parseInt(loc.substring(1,2))-1;
+        col = Integer.parseInt(loc.substring(1))-1;
 
     }
 

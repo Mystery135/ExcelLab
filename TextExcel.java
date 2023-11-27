@@ -5,7 +5,7 @@ import java.util.Scanner;
 
 public class TextExcel
 {
-public static int CELL_SPACE = 10;
+public static int CELL_SPACE = 20;
 	public static void main(String[] args)
 	{
 		Scanner scanner = new Scanner(System.in);;

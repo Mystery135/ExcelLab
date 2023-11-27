@@ -2,11 +2,13 @@ package textExcel;
 
 import textExcel.helpers.Utils;
 
-public class TextCell implements Cell{
-    private String value;
-    public TextCell(String value){
+public abstract class RealCell implements Cell{
+    String value;
+    public RealCell(String value){
         this.value = value;
     }
+    public abstract double getDoubleValue();
+
     @Override
     public String abbreviatedCellText() {
         return Utils.abbreviateText(value);
