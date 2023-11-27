@@ -1,11 +1,7 @@
 package textExcel;
 // Update this file with your own code.
 
-import javax.lang.model.util.AbstractElementVisitor6;
-import java.text.Format;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Locale;
+import java.util.HashSet;
 
 public class Spreadsheet implements Grid
 {
@@ -13,8 +9,8 @@ private Cell[][] cells;
 int cellWidth;
 int cellHeight;
 	public Spreadsheet(){
-		cellWidth = 30;
-		cellHeight = 20;
+		cellWidth = 9;
+		cellHeight = 9;
 		cells = new Cell[cellWidth][cellHeight];
 		for (int i = 0; i<cellWidth; i++){
 			for (int j = 0; j<cellHeight; j++){
@@ -35,22 +31,23 @@ int cellHeight;
 			}
 		return getGridText();
 		}else if (command.contains("clear") && !command.contains("\"")){
-			command = removeWhiteSpaces(command);
-			SpreadsheetLocation location = new SpreadsheetLocation(command.toUpperCase().substring(5, 7));
+			command = formatText(command);
+			String position = formatText(formatText(command.replace("CLEAR","")));
+			SpreadsheetLocation location = new SpreadsheetLocation(position);
 			cells[location.getRow()][location.getCol()] = new EmptyCell();
 			return getGridText();
 		}else if(command.contains("=")){
 			return processCellAssignation(command);
 		}
 		else if (Character.isDigit(command.toCharArray()[command.toCharArray().length-1]) && Character.isLetter(command.toCharArray()[0])){
-			return processCellInspection(removeWhiteSpaces(command));
+			return processCellInspection(formatText(command));
 		}
 		return "Invalid command! Try again!";//TODO: make into variable
 	}
 	private String processCellInspection(String command){
 		SpreadsheetLocation location = new SpreadsheetLocation(command);
 		for (int i = 0; i<cells.length; i++){
-			for (int j = 0; j<cells.length; j++){
+			for (int j = 0; j<cells[0].length; j++){
 				System.out.println("Index: [" + i + "," + j + "] - {" + cells[i][j].abbreviatedCellText() + "}");
 			}
 		}
@@ -65,24 +62,53 @@ int cellHeight;
 		}
 		coordinates = commandParts[0];
 		value = commandParts[1];
-		coordinates = removeWhiteSpaces(coordinates);
+		coordinates = formatText(coordinates);
 		if (command.contains("\"")){
 			String strValue = value.split("\"")[1];
 			SpreadsheetLocation location = new SpreadsheetLocation(coordinates);
 			cells[location.getRow()][location.getCol()] = new TextCell(strValue);
 		}else if (command.contains("%")){
-			value = removeWhiteSpaces(value);
+			value = formatText(value);
 			SpreadsheetLocation location = new SpreadsheetLocation(coordinates);
 			cells[location.getRow()][location.getCol()] = new PercentCell(value);
-		}else if (removeWhiteSpaces(value).matches("[+-]?\\d+(\\.\\d+)?")){
-			value = removeWhiteSpaces(value);
+		}else if (formatText(value).matches("[+-]?\\d+(\\.\\d+)?")){
+			value = formatText(value);
 			SpreadsheetLocation location = new SpreadsheetLocation(coordinates);
 			cells[location.getRow()][location.getCol()] = new ValueCell(value);
-		}else{
-			System.out.println(value);
-			return "Invalid command! Try again!";
+		}
+		else{
+			boolean flag = false;
+			HashSet<String> listOfCellsInFormula = new HashSet<>();
+			for (int i = 0; i<cellWidth; i++){
+				for (int j = 0; j<cellHeight; j++){
+					String s = String.valueOf((char) (i+65)) + j;
+					value = formatText(value);
+					if (value.contains(s)){
+						listOfCellsInFormula.add(s);
+						flag = true;
+						break;
+					}
+				}
+			}
+			if (!flag) {
+				return "Invalid command! Try again!";
+			}else{
+				processFunction(value, coordinates, listOfCellsInFormula);
+			}
 		}
 		return getGridText();
+	}
+	private String processFunction(String value, String coordinates, HashSet<String> listOfCellsInFormula){
+		SpreadsheetLocation location;
+		for (String cell : listOfCellsInFormula){
+			location = new SpreadsheetLocation(cell);
+			value.replace(cell,cells[location.getRow()][location.getCol()].fullCellText());
+		}
+
+
+
+
+
 	}
 //	private String processCellInspection(String command){
 //		return null;
@@ -131,7 +157,7 @@ int cellHeight;
 		}
 		return toReturn.toString();
 	}
-	private String removeWhiteSpaces(String s){
+	private String formatText(String s){
 		return s.replaceAll("\\s", "").toUpperCase();
 	}
 

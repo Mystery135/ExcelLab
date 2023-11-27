@@ -9,7 +9,7 @@ public class PercentCell extends RealCell{
 
     @Override
     public double getDoubleValue() {
-        return Double.parseDouble(value.replace("%", ""))*100;
+        return Double.parseDouble(value.replace("%", ""))/100;
     }
 
 
