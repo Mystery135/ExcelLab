@@ -1,7 +1,12 @@
 package textExcel;
 // Update this file with your own code.
 
+import javax.script.ScriptEngineManager;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 public class Spreadsheet implements Grid
 {
@@ -86,7 +91,6 @@ int cellHeight;
 					if (value.contains(s)){
 						listOfCellsInFormula.add(s);
 						flag = true;
-						break;
 					}
 				}
 			}
@@ -99,14 +103,59 @@ int cellHeight;
 		return getGridText();
 	}
 	private String processFunction(String value, String coordinates, HashSet<String> listOfCellsInFormula){
-		SpreadsheetLocation location;
+		SpreadsheetLocation valueLocation;
 		for (String cell : listOfCellsInFormula){
-			location = new SpreadsheetLocation(cell);
-			value.replace(cell,cells[location.getRow()][location.getCol()].fullCellText());
+			valueLocation = new SpreadsheetLocation(cell);
+			value = value.replace(cell,cells[valueLocation.getRow()][valueLocation.getCol()].fullCellText());
 		}
+		System.out.println(value);
+		SpreadsheetLocation location = new SpreadsheetLocation(coordinates);
+		HashMap<Integer, Integer> numSets = new HashMap<>();
+		HashMap<HashMap, Character> operationSets = new HashMap<>();
+		try {
+
+
+			value = formatText(value);
 
 
 
+			List<Integer> nums = new ArrayList<>();
+			List<String> operators = new ArrayList<>();
+
+			String numString = "";
+
+			List<String> commandAsString = new ArrayList<>();
+			int j = 0;
+			for (int i = 0; i<value.length(); i++){
+				if (Character.isDigit(value.charAt(i))){
+					if (commandAsString.size() >= j){
+						commandAsString.set(j, String.valueOf((value.charAt(j))));
+					}else{
+						commandAsString.set(j,  commandAsString.get(j) + (value.charAt(j)));
+					}
+				}else{
+					j++;
+						commandAsString.set(j, String.valueOf(value.charAt(j)));
+					j++;
+				}
+			}
+			System.out.println(commandAsString);
+
+
+
+//			int i = Integer.parseInt(value);
+			return "";
+
+
+
+//			System.out.println(Integer.parseInt(value));
+//			cells[location.getRow()][location.getCol()] = new ValueCell(String.valueOf(Integer.parseInt(value)));
+//			return String.valueOf(Integer.parseInt(value));
+		}catch (Exception e){
+			System.out.println("ERROR");
+			e.printStackTrace();
+			return "ERROR";
+		}
 
 
 	}
