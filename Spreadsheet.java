@@ -7,14 +7,16 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+import static textExcel.helpers.Utils.formatText;
+
 public class Spreadsheet implements Grid
 {
 private Cell[][] cells;
 int cellWidth;
 int cellHeight;
 	public Spreadsheet(){
-		cellWidth = 9;
-		cellHeight = 9;
+		cellWidth = 10;
+		cellHeight = 10;
 		cells = new Cell[cellWidth][cellHeight];
 		for (int i = 0; i<cellWidth; i++){
 			for (int j = 0; j<cellHeight; j++){
@@ -51,10 +53,10 @@ int cellHeight;
 		SpreadsheetLocation location = new SpreadsheetLocation(command);
 		for (int i = 0; i<cells.length; i++){
 			for (int j = 0; j<cells[0].length; j++){
-				System.out.println("Index: [" + i + "," + j + "] - {" + cells[i][j].abbreviatedCellText() + "}");
+				System.out.println("Index: [" + i + "," + j + "] - {" + cells[i][j].fullCellText() + "}");
 			}
 		}
-		return getCell(location).abbreviatedCellText();
+		return getCell(location).fullCellText();
 	}
 	private String processCellAssignation(String command)  {
 		String coordinates;
@@ -90,6 +92,9 @@ int cellHeight;
 						listOfCellsInFormula.add(s);
 						flag = true;
 					}
+					if (value.contains("+") || value.contains("-") || value.contains("*") || value.contains("/") || value.contains("^")){
+						flag = true;
+					}
 				}
 			}
 			if (!flag) {
@@ -101,80 +106,25 @@ int cellHeight;
 		return getGridText();
 	}
 	private String processFunction(String value, String coordinates, HashSet<String> listOfCellsInFormula) {
-		SpreadsheetLocation valueLocation;
-		for (String cell : listOfCellsInFormula){
-			valueLocation = new SpreadsheetLocation(cell);
-			value = value.replace(cell,cells[valueLocation.getRow()][valueLocation.getCol()].fullCellText());
-		}
+
 		System.out.println(value);
 
 
 
-
-
-		List<String> commandAsString = new ArrayList<>();
-
 		try {
 
-
-//			value = formatText(value);
-
-
-
-			int j = -1;
-
-			for (int i = 0; i < value.length(); i++) {
-				if (Character.isDigit(value.charAt(i))) {
-					if (j == -1 || !Character.isDigit(value.charAt(i - 1))) {
-						commandAsString.add(String.valueOf(value.charAt(i)));
-						j++;
-					} else {
-						commandAsString.set(j, commandAsString.get(j) + value.charAt(i));
-					}
-				} else {
-					commandAsString.add(String.valueOf(value.charAt(i)));
-					j++;
-				}
-			}
-			for (int i = 0; i<commandAsString.size(); i++){
-				if (formatText(commandAsString.get(i)).equals("+")){
-					int sum = Integer.parseInt(commandAsString.get(i - 1)) + Integer.parseInt(commandAsString.get(i + 1));;
-					commandAsString.set(i-1, String.valueOf(sum));
-					commandAsString.remove(i);
-					commandAsString.remove(i);
-					i--;
-				}
-			}
-			value = commandAsString.get(0);
-
-
-
-			System.out.println(commandAsString);
-
 			SpreadsheetLocation location = new SpreadsheetLocation(coordinates);
-			cells[location.getRow()][location.getCol()] = new ValueCell(value);
-
-
-//			int i = Integer.parseInt(value);
+			cells[location.getRow()][location.getCol()] = new FormulaCell(value,listOfCellsInFormula, cells);
 			return "";
-
-
-
-//			System.out.println(Integer.parseInt(value));
-//			cells[location.getRow()][location.getCol()] = new ValueCell(String.valueOf(Integer.parseInt(value)));
-//			return String.valueOf(Integer.parseInt(value));
 		}catch (Exception e){
 			System.out.println("ERROR");
-			System.out.println(commandAsString);
 			e.printStackTrace();
 			return "ERROR";
 		}
 
 
 	}
-//	private String processCellInspection(String command){
-//		return null;
-//	}
+
 
 	@Override
 	public int getRows()
@@ -219,8 +169,6 @@ int cellHeight;
 		}
 		return toReturn.toString();
 	}
-	private String formatText(String s){
-		return s.replaceAll("\\s", "").toUpperCase();
-	}
+
 
 }

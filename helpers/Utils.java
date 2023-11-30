@@ -17,4 +17,7 @@ public class Utils {
         }
         return toReturn.toString();
     }
+    public static String formatText(String s){
+        return s.replaceAll("\\s", "").toUpperCase();
+    }
 }
