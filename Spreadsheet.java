@@ -1,7 +1,6 @@
 package textExcel;
 // Update this file with your own code.
 
-import javax.script.ScriptEngineManager;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,8 +25,7 @@ int cellHeight;
 
 
 	@Override
-	public String processCommand(String command)
-	{
+	public String processCommand(String command)  {
 		if (command.equalsIgnoreCase("clear")){
 			for (int i = 0; i<cellWidth; i++){
 				for (int j = 0; j<cellHeight; j++){
@@ -58,7 +56,7 @@ int cellHeight;
 		}
 		return getCell(location).abbreviatedCellText();
 	}
-	private String processCellAssignation(String command){
+	private String processCellAssignation(String command)  {
 		String coordinates;
 		String value;
 		String[] commandParts = command.split("=");
@@ -102,45 +100,59 @@ int cellHeight;
 		}
 		return getGridText();
 	}
-	private String processFunction(String value, String coordinates, HashSet<String> listOfCellsInFormula){
+	private String processFunction(String value, String coordinates, HashSet<String> listOfCellsInFormula) {
 		SpreadsheetLocation valueLocation;
 		for (String cell : listOfCellsInFormula){
 			valueLocation = new SpreadsheetLocation(cell);
 			value = value.replace(cell,cells[valueLocation.getRow()][valueLocation.getCol()].fullCellText());
 		}
 		System.out.println(value);
-		SpreadsheetLocation location = new SpreadsheetLocation(coordinates);
-		HashMap<Integer, Integer> numSets = new HashMap<>();
-		HashMap<HashMap, Character> operationSets = new HashMap<>();
+
+
+
+
+
+		List<String> commandAsString = new ArrayList<>();
+
 		try {
 
 
-			value = formatText(value);
+//			value = formatText(value);
 
 
 
-			List<Integer> nums = new ArrayList<>();
-			List<String> operators = new ArrayList<>();
+			int j = -1;
 
-			String numString = "";
-
-			List<String> commandAsString = new ArrayList<>();
-			int j = 0;
-			for (int i = 0; i<value.length(); i++){
-				if (Character.isDigit(value.charAt(i))){
-					if (commandAsString.size() >= j){
-						commandAsString.set(j, String.valueOf((value.charAt(j))));
-					}else{
-						commandAsString.set(j,  commandAsString.get(j) + (value.charAt(j)));
+			for (int i = 0; i < value.length(); i++) {
+				if (Character.isDigit(value.charAt(i))) {
+					if (j == -1 || !Character.isDigit(value.charAt(i - 1))) {
+						commandAsString.add(String.valueOf(value.charAt(i)));
+						j++;
+					} else {
+						commandAsString.set(j, commandAsString.get(j) + value.charAt(i));
 					}
-				}else{
-					j++;
-						commandAsString.set(j, String.valueOf(value.charAt(j)));
+				} else {
+					commandAsString.add(String.valueOf(value.charAt(i)));
 					j++;
 				}
 			}
+			for (int i = 0; i<commandAsString.size(); i++){
+				if (formatText(commandAsString.get(i)).equals("+")){
+					int sum = Integer.parseInt(commandAsString.get(i - 1)) + Integer.parseInt(commandAsString.get(i + 1));;
+					commandAsString.set(i-1, String.valueOf(sum));
+					commandAsString.remove(i);
+					commandAsString.remove(i);
+					i--;
+				}
+			}
+			value = commandAsString.get(0);
+
+
+
 			System.out.println(commandAsString);
 
+			SpreadsheetLocation location = new SpreadsheetLocation(coordinates);
+			cells[location.getRow()][location.getCol()] = new ValueCell(value);
 
 
 //			int i = Integer.parseInt(value);
@@ -153,6 +165,7 @@ int cellHeight;
 //			return String.valueOf(Integer.parseInt(value));
 		}catch (Exception e){
 			System.out.println("ERROR");
+			System.out.println(commandAsString);
 			e.printStackTrace();
 			return "ERROR";
 		}
