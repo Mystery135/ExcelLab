@@ -13,7 +13,10 @@ public static int CELL_SPACE = 20;
 		String input;
 		do {
 			input = scanner.nextLine();
-			System.out.println(spreadsheet.processCommand(input));
+			if (!input.equalsIgnoreCase("quit")){System.out.println(spreadsheet.processCommand(input));
+			}else{
+				System.out.println("Stopping...");
+			}
 		}while (!input.equalsIgnoreCase("quit"));
 
 

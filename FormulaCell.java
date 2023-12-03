@@ -25,7 +25,11 @@ public class FormulaCell extends RealCell{
         SpreadsheetLocation valueLocation;
         for (String cell : listOfCellsInFormula){
             valueLocation = new SpreadsheetLocation(cell);
-            updatedValue = updatedValue.replace(cell, String.valueOf(((RealCell)cells[valueLocation.getRow()][valueLocation.getCol()]).getDoubleValue()));
+            if (cells[valueLocation.getRow()][valueLocation.getCol()] instanceof RealCell) {
+                updatedValue = updatedValue.replace(cell, String.valueOf(((RealCell) cells[valueLocation.getRow()][valueLocation.getCol()]).getDoubleValue()));
+            }else{
+                return -1;
+            }
         }
         List<String> commandAsString = new ArrayList<>();
 
@@ -47,7 +51,6 @@ public class FormulaCell extends RealCell{
 
         double newValue;
         System.out.println(commandAsString);
-
 
         if (commandAsString.contains("^")) {
             for (int i = 0; i < commandAsString.size(); i++) {
@@ -105,6 +108,6 @@ public class FormulaCell extends RealCell{
 
     @Override
     public String fullCellText() {
-        return value;
+        return "=" + value;
     }
 }

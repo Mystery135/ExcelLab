@@ -18,6 +18,6 @@ public class EmptyCell implements Cell{
 
     @Override
     public String fullCellText() {
-        return value;
+        return "";
     }
 }

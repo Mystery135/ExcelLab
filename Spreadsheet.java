@@ -2,11 +2,8 @@ package textExcel;
 // Update this file with your own code.
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-
+import java.io.*;
+import java.util.*;
 import static textExcel.helpers.Utils.formatText;
 
 public class Spreadsheet implements Grid
@@ -41,7 +38,34 @@ int cellHeight;
 			SpreadsheetLocation location = new SpreadsheetLocation(position);
 			cells[location.getRow()][location.getCol()] = new EmptyCell();
 			return getGridText();
-		}else if(command.contains("=")){
+		}else if (formatText(command).equalsIgnoreCase("save")){
+			try {
+				Scanner scanner = new Scanner(System.in);;
+				System.out.println("What do you want to name your file? (If you name your file the same as an existing .csv file, you will overwrite it.)");
+				System.out.println("You can also specify a path (ex. C:\\Users\\websi\\Downloads\\file)");
+				String fileName = scanner.nextLine();
+				File file = new File(fileName + ".csv");
+				if (!file.exists()){
+					file.createNewFile();
+				}
+				PrintWriter printWriter = new PrintWriter(file);
+				StringBuilder lineBuilder = new StringBuilder();
+				for (int i = 0;  i<getCols(); i++){
+					for (int j = 0; j<getRows(); j++){
+						lineBuilder.append(cells[j][i].fullCellText()).append(",");
+
+					}
+					printWriter.println(lineBuilder);
+
+					lineBuilder = new StringBuilder();
+				};
+				printWriter.close();
+				return "Saved! Path: " + file.getAbsolutePath();
+			}catch (Exception e){
+				e.printStackTrace();
+			}
+		}
+		else if(command.contains("=")){
 			return processCellAssignation(command);
 		}
 		else if (Character.isDigit(command.toCharArray()[command.toCharArray().length-1]) && Character.isLetter(command.toCharArray()[0])){
@@ -169,6 +193,4 @@ int cellHeight;
 		}
 		return toReturn.toString();
 	}
-
-
 }
