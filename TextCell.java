@@ -14,6 +14,6 @@ public class TextCell implements Cell{
 
     @Override
     public String fullCellText() {
-        return value;
+        return "\"" + value + "\"";
     }
 }

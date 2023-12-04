@@ -1,7 +1,6 @@
 package textExcel;
 // Update this file with your own code.
 
-import java.awt.*;
 import java.io.*;
 import java.util.*;
 import static textExcel.helpers.Utils.formatText;
@@ -11,9 +10,9 @@ public class Spreadsheet implements Grid
 private Cell[][] cells;
 int cellWidth;
 int cellHeight;
-	public Spreadsheet(){
-		cellWidth = 10;
-		cellHeight = 10;
+	public Spreadsheet(int height, int width){
+		cellWidth = width;
+		cellHeight = height;
 		cells = new Cell[cellWidth][cellHeight];
 		for (int i = 0; i<cellWidth; i++){
 			for (int j = 0; j<cellHeight; j++){
@@ -25,6 +24,9 @@ int cellHeight;
 
 	@Override
 	public String processCommand(String command)  {
+
+
+
 		if (command.equalsIgnoreCase("clear")){
 			for (int i = 0; i<cellWidth; i++){
 				for (int j = 0; j<cellHeight; j++){
@@ -42,7 +44,7 @@ int cellHeight;
 			try {
 				Scanner scanner = new Scanner(System.in);;
 				System.out.println("What do you want to name your file? (If you name your file the same as an existing .csv file, you will overwrite it.)");
-				System.out.println("You can also specify a path (ex. C:\\Users\\websi\\Downloads\\file)");
+				System.out.println("You can also specify a path (ex. C:\\Users\\user\\Downloads\\data)");
 				String fileName = scanner.nextLine();
 				File file = new File(fileName + ".csv");
 				if (!file.exists()){
@@ -53,7 +55,6 @@ int cellHeight;
 				for (int i = 0;  i<getCols(); i++){
 					for (int j = 0; j<getRows(); j++){
 						lineBuilder.append(cells[j][i].fullCellText()).append(",");
-
 					}
 					printWriter.println(lineBuilder);
 
@@ -66,25 +67,29 @@ int cellHeight;
 			}
 		}
 		else if(command.contains("=")){
-			return processCellAssignation(command);
+			try {
+				return processCellAssignation(command);
+			}catch (Exception e){
+
+			}
 		}
-		else if (Character.isDigit(command.toCharArray()[command.toCharArray().length-1]) && Character.isLetter(command.toCharArray()[0])){
-			return processCellInspection(formatText(command));
+		else if (command.toCharArray().length > 1){
+			if (Character.isDigit(command.toCharArray()[command.toCharArray().length-1]) && Character.isLetter(command.toCharArray()[0])){
+				return processCellInspection(formatText(command));
+			}
 		}
-		return "Invalid command! Try again!";//TODO: make into variable
+		return Constants.INVALID_COMMAND;
 	}
 	private String processCellInspection(String command){
 		SpreadsheetLocation location = new SpreadsheetLocation(command);
-		for (int i = 0; i<cells.length; i++){
-			for (int j = 0; j<cells[0].length; j++){
-				System.out.println("Index: [" + i + "," + j + "] - {" + cells[i][j].fullCellText() + "}");
-			}
-		}
 		return getCell(location).fullCellText();
 	}
 	private String processCellAssignation(String command)  {
 		String coordinates;
 		String value;
+		if((command.contains("(") || command.contains(")")) && !command.contains("\"")){
+			command = command.replace("(", "").replace(")", "");
+		}
 		String[] commandParts = command.split("=");
 		if (commandParts.length < 2){
 			return null;
@@ -106,46 +111,46 @@ int cellHeight;
 			cells[location.getRow()][location.getCol()] = new ValueCell(value);
 		}
 		else{
-			boolean flag = false;
+			boolean isFunction = false;
 			HashSet<String> listOfCellsInFormula = new HashSet<>();
-			for (int i = 0; i<cellWidth; i++){
-				for (int j = 0; j<cellHeight; j++){
-					String s = String.valueOf((char) (i+65)) + j;
+			for (int i = cellWidth; i>0; i--){
+				for (int j = cellWidth; j>0; j--){
+					String s = String.valueOf((char) (i+64)) + j;
 					value = formatText(value);
 					if (value.contains(s)){
 						listOfCellsInFormula.add(s);
-						flag = true;
+						isFunction = true;
 					}
-					if (value.contains("+") || value.contains("-") || value.contains("*") || value.contains("/") || value.contains("^")){
-						flag = true;
+					else if (value.contains("+") || value.contains("-") || value.contains("*") || value.contains("/") || value.contains("^")){
+						isFunction = true;
 					}
 				}
 			}
-			if (!flag) {
-				return "Invalid command! Try again!";
+			if (!isFunction) {
+				return Constants.INVALID_COMMAND;
 			}else{
 				processFunction(value, coordinates, listOfCellsInFormula);
 			}
 		}
 		return getGridText();
 	}
-	private String processFunction(String value, String coordinates, HashSet<String> listOfCellsInFormula) {
-
-		System.out.println(value);
-
-
-
+	private void processFunction(String value, String coordinates, HashSet<String> listOfCellsInFormula) {
 		try {
-
-			SpreadsheetLocation location = new SpreadsheetLocation(coordinates);
-			cells[location.getRow()][location.getCol()] = new FormulaCell(value,listOfCellsInFormula, cells);
-			return "";
-		}catch (Exception e){
-			System.out.println("ERROR");
-			e.printStackTrace();
-			return "ERROR";
+		}catch (NumberFormatException e){
+			System.out.println(Constants.INVALID_COMMAND);
 		}
 
+		SpreadsheetLocation location = new SpreadsheetLocation(coordinates);
+		if (value.contains(coordinates)){
+			if (cells[location.getRow()][location.getCol()] instanceof RealCell){
+				value = value.replace(coordinates,String.valueOf(((RealCell) cells[location.getRow()][location.getCol()]).getDoubleValue()));
+			}else{
+				value = value.replace(coordinates, cells[location.getRow()][location.getCol()].fullCellText()); //TODO: Test with Strings!
+			}
+			listOfCellsInFormula.remove(coordinates);
+		}
+		FormulaCell formulaCell = new FormulaCell(value,listOfCellsInFormula, cells);
+		cells[location.getRow()][location.getCol()] = formulaCell;
 
 	}
 
@@ -175,7 +180,7 @@ int cellHeight;
 		toReturn.append("   |");
 		for (int i = 0; i<getRows(); i++){
 			toReturn.append((char)(i+65));
-			for (int j = 0; j<TextExcel.CELL_SPACE-1; j++){
+			for (int j = 0; j<Constants.CELL_SPACE-1; j++){
 				toReturn.append(" ");
 			}
 			toReturn.append("|");

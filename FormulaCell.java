@@ -1,82 +1,64 @@
 package textExcel;
 
-import java.text.DecimalFormat;
-import java.util.ArrayList;
+import textExcel.helpers.Utils;
+
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 import static textExcel.helpers.Utils.abbreviateText;
 import static textExcel.helpers.Utils.formatText;
 
-public class FormulaCell extends RealCell{
-    DecimalFormat decimalFormat = new DecimalFormat("###.#");
+public class FormulaCell extends RealCell {
     HashSet<String> listOfCellsInFormula;
     Cell[][] cells;
-    public FormulaCell(String value, HashSet<String> listOfCellsInFormula, Cell[][] cells) {
+    private double decimalValue;
+
+    public FormulaCell(String value, HashSet<String> listOfCellsInFormula, Cell[][] cells) throws NumberFormatException {
         super(value);
+
         this.listOfCellsInFormula = listOfCellsInFormula;
         this.cells = cells;
+
+
+
     }
 
     @Override
     public double getDoubleValue() {
+        //Have to calculate every time because if the cell is a2 + a3 and user changes a2, this cell will need to update accordingly.
         String updatedValue = value;
         SpreadsheetLocation valueLocation;
-        for (String cell : listOfCellsInFormula){
+        for (String cell : listOfCellsInFormula) {
             valueLocation = new SpreadsheetLocation(cell);
             if (cells[valueLocation.getRow()][valueLocation.getCol()] instanceof RealCell) {
-                updatedValue = updatedValue.replace(cell, String.valueOf(((RealCell) cells[valueLocation.getRow()][valueLocation.getCol()]).getDoubleValue()));
-            }else{
-                return -1;
-            }
-        }
-        List<String> commandAsString = new ArrayList<>();
-
-        int j = -1;
-
-        for (int i = 0; i < updatedValue.length(); i++) {
-            if (Character.isDigit(updatedValue.charAt(i)) || updatedValue.charAt(i) == '.') {
-                if (j == -1 || (!Character.isDigit(updatedValue.charAt(i - 1)) && updatedValue.charAt(i-1) != '.')) {
-                    commandAsString.add(String.valueOf(updatedValue.charAt(i)));
-                    j++;
-                } else {
-                    commandAsString.set(j, commandAsString.get(j) + updatedValue.charAt(i));
+                if (cells[valueLocation.getRow()][valueLocation.getCol()] == this){
+                    updatedValue = updatedValue.replace(cell, String.valueOf(((RealCell) cells[valueLocation.getRow()][valueLocation.getCol()]).getDoubleValue()));
+                }else{
+                    updatedValue = updatedValue.replace(cell, String.valueOf(((RealCell) cells[valueLocation.getRow()][valueLocation.getCol()]).getDoubleValue()));
                 }
             } else {
-                commandAsString.add(String.valueOf(updatedValue.charAt(i)));
-                j++;
+                decimalValue = -1;
             }
         }
 
-        double newValue;
-        System.out.println(commandAsString);
+        List<String> commandAsString = Utils.toList(updatedValue);
+
 
         if (commandAsString.contains("^")) {
             for (int i = 0; i < commandAsString.size(); i++) {
                 if (formatText(commandAsString.get(i)).equals("^")) {
-                    newValue = Math.pow(Double.parseDouble(commandAsString.get(i - 1)), Double.parseDouble(commandAsString.get(i + 1)));
-                    commandAsString.set(i - 1, String.valueOf(newValue));
-                    commandAsString.remove(i);
-                    commandAsString.remove(i);
+                    Utils.doOperation(commandAsString, '^', i);
                     i--;
                 }
             }
         }
-
         if (commandAsString.contains("*") || commandAsString.contains("/")) {
             for (int i = 0; i < commandAsString.size(); i++) {
                 if (formatText(commandAsString.get(i)).equals("*")) {
-                    newValue = Double.parseDouble(commandAsString.get(i - 1)) * Double.parseDouble(commandAsString.get(i + 1));
-                    commandAsString.set(i - 1, String.valueOf(newValue));
-                    commandAsString.remove(i);
-                    commandAsString.remove(i);
+                    Utils.doOperation(commandAsString, '*', i);
                     i--;
                 } else if (formatText(commandAsString.get(i)).equals("/")) {
-                    newValue = Double.parseDouble(commandAsString.get(i - 1)) / Double.parseDouble(commandAsString.get(i + 1));;
-                    commandAsString.set(i - 1, String.valueOf(newValue));
-                    commandAsString.remove(i);
-                    commandAsString.remove(i);
+                    Utils.doOperation(commandAsString, '/', i);
                     i--;
                 }
             }
@@ -84,26 +66,22 @@ public class FormulaCell extends RealCell{
         if (commandAsString.contains("+") || commandAsString.contains("-")) {
             for (int i = 0; i < commandAsString.size(); i++) {
                 if (formatText(commandAsString.get(i)).equals("+")) {
-                    newValue = Double.parseDouble(commandAsString.get(i - 1)) + Double.parseDouble(commandAsString.get(i + 1));;
-                    commandAsString.set(i - 1, String.valueOf(newValue));
-                    commandAsString.remove(i);
-                    commandAsString.remove(i);
+                    Utils.doOperation(commandAsString, '+', i);
                     i--;
                 } else if (formatText(commandAsString.get(i)).equals("-")) {
-                    newValue = Double.parseDouble(commandAsString.get(i - 1)) - Double.parseDouble(commandAsString.get(i + 1));;
-                    commandAsString.set(i - 1, String.valueOf(newValue));
-                    commandAsString.remove(i);
-                    commandAsString.remove(i);
+                    Utils.doOperation(commandAsString, '-', i);
                     i--;
                 }
             }
         }
-        return Double.parseDouble(commandAsString.get(0));
+        decimalValue = Double.parseDouble(commandAsString.get(0));
+
+        return decimalValue;
     }
 
     @Override
     public String abbreviatedCellText() {
-        return (abbreviateText(String.valueOf(decimalFormat.format(getDoubleValue()))));
+        return (abbreviateText(String.valueOf(getDoubleValue())));
     }
 
     @Override
