@@ -2,9 +2,10 @@ package textExcel;
 
 import java.util.ArrayList;
 
-public class History extends ArrayList<Void> {
+public class History {
     private int length;
     public History(int length){
+        ArrayList<String> list = new ArrayList();
         this.length = length;
     }
 
@@ -15,9 +16,8 @@ public class History extends ArrayList<Void> {
     public void setLength(int length) {
         this.length = length;
     }
-    @Override
-    public Void remove(int index){
-        
+    public String remove(int index){
+
 
         return null;
     }
