@@ -8,7 +8,6 @@ public class SpreadsheetLocation implements Location {
         this.loc = loc;
         row = loc.toUpperCase().toCharArray()[0]-65;
         col = Integer.parseInt(loc.substring(1))-1;
-
     }
 
     @Override

@@ -1,6 +1,9 @@
 package textExcel;
 // Update this file with your own code.
 
+import com.sun.jdi.event.ExceptionEvent;
+import textExcel.helpers.Utils;
+
 import java.io.*;
 import java.util.*;
 import static textExcel.helpers.Utils.formatText;
@@ -10,6 +13,8 @@ public class Spreadsheet implements Grid
 private Cell[][] cells;
 int cellWidth;
 int cellHeight;
+List<String> history = new ArrayList<>();
+int historyDepth = 0;
 	public Spreadsheet(int height, int width){
 		cellWidth = width;
 		cellHeight = height;
@@ -24,61 +29,123 @@ int cellHeight;
 
 	@Override
 	public String processCommand(String command)  {
-
-
-
-		if (command.equalsIgnoreCase("clear")){
-			for (int i = 0; i<cellWidth; i++){
-				for (int j = 0; j<cellHeight; j++){
-					cells[i][j] = new EmptyCell();
-				}
-			}
-		return getGridText();
-		}else if (command.contains("clear") && !command.contains("\"")){
-			command = formatText(command);
-			String position = formatText(formatText(command.replace("CLEAR","")));
-			SpreadsheetLocation location = new SpreadsheetLocation(position);
-			cells[location.getRow()][location.getCol()] = new EmptyCell();
-			return getGridText();
-		}else if (formatText(command).equalsIgnoreCase("save")){
-			try {
-				Scanner scanner = new Scanner(System.in);;
-				System.out.println("What do you want to name your file? (If you name your file the same as an existing .csv file, you will overwrite it.)");
-				System.out.println("You can also specify a path (ex. C:\\Users\\user\\Downloads\\data)");
-				String fileName = scanner.nextLine();
-				File file = new File(fileName + ".csv");
-				if (!file.exists()){
-					file.createNewFile();
-				}
-				PrintWriter printWriter = new PrintWriter(file);
-				StringBuilder lineBuilder = new StringBuilder();
-				for (int i = 0;  i<getCols(); i++){
-					for (int j = 0; j<getRows(); j++){
-						lineBuilder.append(cells[j][i].fullCellText()).append(",");
+		if (!command.contains("history") || command.contains("\"")){
+		history.add(command);}
+		//Try/catch so that if code errors, the program won't stop
+		try{
+			if (command.equalsIgnoreCase("clear")){
+				for (int i = 0; i<cellWidth; i++){
+					for (int j = 0; j<cellHeight; j++){
+						cells[i][j] = new EmptyCell();
 					}
-					printWriter.println(lineBuilder);
+				}
+				return getGridText();
+				//If the user types clear
+			}else if (command.contains("clear") && !command.contains("\"") && !command.contains("history")){
+				command = formatText(command);
+				String position = formatText(formatText(command.replace("CLEAR","")));
+				SpreadsheetLocation location = new SpreadsheetLocation(position);
+				cells[location.getRow()][location.getCol()] = new EmptyCell();
+				return getGridText();
+			}
+			else if (command.contains("history") && !command.contains("\"")){
 
-					lineBuilder = new StringBuilder();
-				};
-				printWriter.close();
-				return "Saved! Path: " + file.getAbsolutePath();
-			}catch (Exception e){
-				e.printStackTrace();
-			}
-		}
-		else if(command.contains("=")){
-			try {
-				return processCellAssignation(command);
-			}catch (Exception e){
+				List<String> args;
 
+				args = List.of(command.split(" "));
+
+				if (formatText(args.get(1)).equalsIgnoreCase("start")){
+						try {
+							if (Integer.parseInt(formatText(args.get(2))) > 0){
+								historyDepth = Integer.parseInt(formatText(args.get(2)));
+							}else{
+								System.out.println("Please input a nonzero positive integer for the length of the history.");
+								historyDepth = Utils.getPositiveNonZeroInt(new Scanner(System.in));
+							}
+						} catch (Exception e) {
+							System.out.println("Please input a nonzero positive integer for the length of the history.");
+							historyDepth = Utils.getPositiveNonZeroInt(new Scanner(System.in));
+						}
+					return "History started of length " + historyDepth + "! Type history display to display history.";
+				}else if (formatText(args.get(1)).equalsIgnoreCase("display")){
+					StringBuilder toReturn = new StringBuilder();
+					int loopAmount;
+					if (history.size() < historyDepth){
+						loopAmount = 0;
+					}else{
+						loopAmount = history.size()-historyDepth;
+					}
+					for (int i = history.size(); i>loopAmount; i--){
+						toReturn.append(history.get(i - 1)).append("\n");
+					}
+					return toReturn.toString();
+				}else if (formatText(args.get(1)).equalsIgnoreCase("clear")){
+					if (args.size() < 3){
+						history.clear();
+						return "All history cleared!";
+					}
+					int clearLength = 0;
+					try {
+						if (Integer.parseInt(formatText(args.get(2))) > 0){
+							clearLength = Integer.parseInt(formatText(args.get(2)));
+						}else{
+							System.out.println("Please input a nonzero positive integer for how much history to clear.");
+							clearLength = Utils.getPositiveNonZeroInt(new Scanner(System.in));
+						}
+					} catch (Exception e) {
+						System.out.println("Please input a nonzero positive integer for how much history to clear.");
+						clearLength = Utils.getPositiveNonZeroInt(new Scanner(System.in));
+					}
+					for (int i = 0; i<=clearLength; i++){
+						history.remove(i);
+					}
+
+					return "History of length " + clearLength + " cleared! Type history display to display history.";
+
+				}
+//				String position = formatText(formatText(command.replace("CLEAR","")));
+//				SpreadsheetLocation location = new SpreadsheetLocation(position);
+//				cells[location.getRow()][location.getCol()] = new EmptyCell();
+				return getGridText();
 			}
-		}
-		else if (command.toCharArray().length > 1){
-			if (Character.isDigit(command.toCharArray()[command.toCharArray().length-1]) && Character.isLetter(command.toCharArray()[0])){
-				return processCellInspection(formatText(command));
+				else if (formatText(command).equalsIgnoreCase("save")){
+					Scanner scanner = new Scanner(System.in);;
+					System.out.println("What do you want to name your file? (If you name your file the same as an existing .csv file, you will overwrite it.)");
+					System.out.println("You can also specify a path (ex. C:\\Users\\user\\Downloads\\data)");
+					String fileName = scanner.nextLine();
+					File file = new File(fileName + ".csv");
+					if (!file.exists()){
+						file.createNewFile();
+					}
+					PrintWriter printWriter = new PrintWriter(file);
+					StringBuilder lineBuilder = new StringBuilder();
+					for (int i = 0;  i<getCols(); i++){
+						for (int j = 0; j<getRows(); j++){
+							lineBuilder.append(cells[j][i].fullCellText()).append(",");
+						}
+						printWriter.println(lineBuilder);
+
+						lineBuilder = new StringBuilder();
+					};
+					printWriter.close();
+					return "Saved! Path: " + file.getAbsolutePath();
 			}
+			else if(command.contains("=")){
+					return processCellAssignation(command);
+			}
+			else if (command.toCharArray().length > 1){
+				if (Character.isDigit(command.toCharArray()[command.toCharArray().length-1]) && Character.isLetter(command.toCharArray()[0])){
+					return processCellInspection(formatText(command));
+				}
+			}
+			history.remove(history.size()-1);
+			return Constants.INVALID_COMMAND;
+		}catch (Exception e){
+			history.remove(history.size()-1);
+			return Constants.INVALID_COMMAND;
 		}
-		return Constants.INVALID_COMMAND;
+		//If user only types clear, replace all cells with emptycell
+
 	}
 	private String processCellInspection(String command){
 		SpreadsheetLocation location = new SpreadsheetLocation(command);
@@ -127,6 +194,7 @@ int cellHeight;
 				}
 			}
 			if (!isFunction) {
+				history.remove(history.size()-1);
 				return Constants.INVALID_COMMAND;
 			}else{
 				processFunction(value, coordinates, listOfCellsInFormula);
@@ -135,11 +203,6 @@ int cellHeight;
 		return getGridText();
 	}
 	private void processFunction(String value, String coordinates, HashSet<String> listOfCellsInFormula) {
-		try {
-		}catch (NumberFormatException e){
-			System.out.println(Constants.INVALID_COMMAND);
-		}
-
 		SpreadsheetLocation location = new SpreadsheetLocation(coordinates);
 		if (value.contains(coordinates)){
 			if (cells[location.getRow()][location.getCol()] instanceof RealCell){

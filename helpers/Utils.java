@@ -1,7 +1,6 @@
 package textExcel.helpers;
 
 import textExcel.Constants;
-import textExcel.TextExcel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,12 +39,18 @@ public class Utils {
     }
 
 
-    public static int getInt(Scanner scanner){
+    public static int getPositiveNonZeroInt(Scanner scanner){
         while (true){
             if (scanner.hasNextInt()){
-                return scanner.nextInt();
+                int i = scanner.nextInt();
+                if (i > 0){
+                    return i;
+                }else{
+                    System.out.println("Input a valid positive nonzero int!");
+                    scanner.nextLine();
+                }
             }else{
-                System.out.println("Input a valid int!");
+                System.out.println("Input a valid positive nonzero int!");
                 scanner.nextLine();
             }
         }

@@ -3,7 +3,6 @@ package textExcel;
 
 import textExcel.helpers.Utils;
 
-import javax.script.ScriptException;
 import java.util.Scanner;
 public class TextExcel
 {
@@ -16,23 +15,22 @@ public class TextExcel
 		int height, width;
 		Scanner scanner = new Scanner(System.in);
 		System.out.print("Cell space: ");
-		Constants.CELL_SPACE = Utils.getInt(scanner);
+		Constants.CELL_SPACE = Utils.getPositiveNonZeroInt(scanner);
 		scanner.nextLine();
 
 		System.out.print("Spreadsheet height: ");
-		height = Utils.getInt(scanner);
+		height = Utils.getPositiveNonZeroInt(scanner);
 		scanner.nextLine();
 
 		System.out.print("Spreadsheet width: ");
-		width = Utils.getInt(scanner);
+		width = Utils.getPositiveNonZeroInt(scanner);
 		scanner.nextLine();
 
 		Spreadsheet spreadsheet = new Spreadsheet(height, width);
 		System.out.println(spreadsheet.getGridText());
 		String input;
 
-
-
+//Main loop which gets and processes user input. Loops until user types quit.
 		do {
 			input = scanner.nextLine();
 			if (!input.equalsIgnoreCase("quit")){System.out.println(spreadsheet.processCommand(input));
