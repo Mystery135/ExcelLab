@@ -1,11 +1,13 @@
 package textExcel;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class History {
     private int length;
+    ArrayList<String> list;
     public History(int length){
-        ArrayList<String> list = new ArrayList();
+         list = new ArrayList<String>();
         this.length = length;
     }
 
@@ -16,10 +18,24 @@ public class History {
     public void setLength(int length) {
         this.length = length;
     }
-    public String remove(int index){
+    public void remove(int index){
+        list.remove(index);
+    }
+    public void add(int index){
+        if (list.listIterator)
 
+    }
+    public ArrayList<String> getList(){
+        return list;
+    }
+    @Override
+    public String toString(){
+        StringBuilder builder = new StringBuilder();
 
-        return null;
+        for (int i = 0; i<list.size(); i++){
+            builder.append(list.get(i));
+        }
+        return builder.toString();
     }
 
 
