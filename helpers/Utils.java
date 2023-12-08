@@ -21,16 +21,21 @@ public class Utils {
 
         if (value.length() < Constants.CELL_SPACE) {
             toReturn.append(value);
+            toReturn.append(suffix);
             for (int i = 0; i < Constants.CELL_SPACE - value.length() - suffix.length(); i++) {
                 toReturn.append(" ");
             }
-        } else if (value.length() > Constants.CELL_SPACE - suffix.length()) {
-            toReturn.append(value, 0, Constants.CELL_SPACE - suffix.length());
+        } else if (value.length() > (Constants.CELL_SPACE - suffix.length())) {
+            if (!suffix.contains("E")){
+                toReturn.append(value, 0, Constants.CELL_SPACE - suffix.length()-3);
+            }
+            toReturn.append("...");
+            toReturn.append(suffix);
         } else {
             toReturn.append(value);
+            toReturn.append(suffix);
         }
 
-        toReturn.append(suffix); // Add the suffix at the end
 
         return toReturn.toString();
     }
@@ -38,8 +43,43 @@ public class Utils {
         return s.replaceAll("\\s", "").toUpperCase();
     }
 
-
-    public static int getPositiveNonZeroInt(Scanner scanner){
+    public static String getInput(Scanner scanner, List<String> inputOptions, String errorMessage){
+        while (true){
+            if (scanner.hasNextLine()){
+                String input = scanner.nextLine();
+                if (inputOptions.contains(formatText(input))){
+                    return input;
+                }
+            }
+            System.out.println(errorMessage);
+//            scanner.nextLine();
+        }
+    }
+    public static int getInt(Scanner scanner, int lowerBound, int upperBound){
+        while (true){
+            if (scanner.hasNextInt()){
+                int i = scanner.nextInt();
+                if (i > lowerBound && i < upperBound){
+                    return i;
+                }
+                System.out.println("Input an int between " + lowerBound + " and " + upperBound + "!");
+                scanner.nextLine();
+            }
+        }
+    }
+    public static int getInt(Scanner scanner, int lowerBound){
+        while (true){
+            if (scanner.hasNextInt()){
+                int i = scanner.nextInt();
+                if (i > lowerBound){
+                    return i;
+                }
+            }
+                System.out.println("Input an int above " + lowerBound + "!");
+                scanner.nextLine();
+        }
+    }
+    public static int getInt(Scanner scanner){
         while (true){
             if (scanner.hasNextInt()){
                 int i = scanner.nextInt();

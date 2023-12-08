@@ -10,7 +10,13 @@ public class History {
          list = new ArrayList<String>();
         this.length = length;
     }
+    public void clear(){
+        list.clear();
+    }
 
+    public int size(){
+        return list.size();
+    }
     public int getLength() {
         return length;
     }
@@ -21,9 +27,12 @@ public class History {
     public void remove(int index){
         list.remove(index);
     }
-    public void add(int index){
-        if (list.listIterator)
-
+    public void add(String command)
+        {
+            list.add(command);
+            if (list.size() > length){
+            list.remove(0);
+        }
     }
     public ArrayList<String> getList(){
         return list;
@@ -32,8 +41,8 @@ public class History {
     public String toString(){
         StringBuilder builder = new StringBuilder();
 
-        for (int i = 0; i<list.size(); i++){
-            builder.append(list.get(i));
+        for (int i = list.size()-1; i>=0; i--){
+            builder.append(list.get(i)).append("\n");
         }
         return builder.toString();
     }
