@@ -159,16 +159,21 @@ boolean addedHistory = false;
 					for (int i = 0; i<lines.size(); i++){//Disregard commas between Quotes!
 						for (int j = 0; j<lines.get(i).split(",").length; j++){
 							List<String> cells = List.of(lines.get(i).split(","));
-							if (cells.get(j).contains("%")){
-								String s = cells.get(j).replace("%", "");
-								try {
-									double d = Double.parseDouble(s);
-									cells[i][j] = new PercentCell(cells.get(j));
-									continue;//CONTINUE IF ASSIGNED!
-								}catch (NumberFormatException e){
+							List<Cell> cellArrayList = new ArrayList<>();
 
+							if (Utils.isDouble(cells.get(j))){
+								this.cells[i][j] = new ValueCell(cells.get(j));
+								continue;//continue if cell is successfully assigned!
+
+							}
+
+							if (cells.get(j).contains("%")){
+								if(Utils.isDouble(cells.get(j), "%")){
+									this.cells[i][j] = new PercentCell(cells.get(j));;
+									continue;//continue if cell is successfully assigned!
 								}
-							}else if (cells.get(j).contains("%")){
+							}
+							if (cells.get(j).contains("%")){
 								String s = cells.get(j).replace("%", "");
 								try {
 									double d = Double.parseDouble(s);
@@ -186,12 +191,12 @@ boolean addedHistory = false;
 					}
 
 
-
-
+					scanner.close();
 					System.out.println(lines);
 
 
 				}catch (Exception e){
+					e.printStackTrace();
 					return "Invalid file.";
 				}
 

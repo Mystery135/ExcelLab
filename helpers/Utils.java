@@ -7,6 +7,24 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Utils {
+    public static boolean isDouble(String s){
+        try {
+            Double.parseDouble(s);
+            return true;
+        }catch (Exception e){
+            return false;
+        }
+    }
+    public static boolean isDouble(String s, String toRemove){
+        try {
+            s = s.replace(toRemove, "");
+            Double.parseDouble(s);
+            return true;
+        }catch (Exception e){
+            return false;
+        }
+    }
+
     public static String abbreviateText(String value) {
         StringBuilder toReturn = new StringBuilder();
         String suffix = "";
