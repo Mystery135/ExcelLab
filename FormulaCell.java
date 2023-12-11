@@ -11,39 +11,35 @@ import static textExcel.helpers.Utils.formatText;
 public class FormulaCell extends RealCell {
     HashSet<String> listOfCellsInFormula;
     Cell[][] cells;
-    private double decimalValue;
 
     public FormulaCell(String value, HashSet<String> listOfCellsInFormula, Cell[][] cells) throws NumberFormatException {
         super(value);
-
         this.listOfCellsInFormula = listOfCellsInFormula;
         this.cells = cells;
-
-
-
     }
 
+
+    //Have to calculate every time because if the cell is a2 + a3 and user changes a2, a3 will need to update accordingly
     @Override
     public double getDoubleValue() {
-        //Have to calculate every time because if the cell is a2 + a3 and user changes a2, this cell will need to update accordingly.
         String updatedValue = value;
         SpreadsheetLocation valueLocation;
+
+        double decimalValue;
         for (String cell : listOfCellsInFormula) {
             valueLocation = new SpreadsheetLocation(cell);
             if (cells[valueLocation.getRow()][valueLocation.getCol()] instanceof RealCell) {
-                if (cells[valueLocation.getRow()][valueLocation.getCol()] == this){
                     updatedValue = updatedValue.replace(cell, String.valueOf(((RealCell) cells[valueLocation.getRow()][valueLocation.getCol()]).getDoubleValue()));
-                }else{
-                    updatedValue = updatedValue.replace(cell, String.valueOf(((RealCell) cells[valueLocation.getRow()][valueLocation.getCol()]).getDoubleValue()));
-                }
             } else {
                 decimalValue = -1;
+                return decimalValue;//If something goes wrong, make the cell -1
             }
         }
 
         List<String> commandAsString = Utils.toList(updatedValue);
 
 
+        //Evaluates the expression
         if (commandAsString.contains("^")) {
             for (int i = 0; i < commandAsString.size(); i++) {
                 if (formatText(commandAsString.get(i)).equals("^")) {
@@ -86,6 +82,6 @@ public class FormulaCell extends RealCell {
 
     @Override
     public String fullCellText() {
-        return "=" + value;
+        return "=" + value;//Add the '=' so that if this is opened in Excel, the formula works
     }
 }

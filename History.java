@@ -1,47 +1,42 @@
 package textExcel;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class History {
-    private int length;
     ArrayList<String> list;
-    public History(int length){
-         list = new ArrayList<String>();
+    //History class which uses an arraylist
+    private final int length;
+
+    public History(int length) {
+        list = new ArrayList<>();
         this.length = length;
     }
-    public void clear(){
+
+    public void clear() {
         list.clear();
     }
 
-    public int size(){
+    public int size() {
         return list.size();
     }
-    public int getLength() {
-        return length;
-    }
 
-    public void setLength(int length) {
-        this.length = length;
-    }
-    public void remove(int index){
+    public void remove(int index) {
         list.remove(index);
     }
-    public void add(String command)
-        {
-            list.add(command);
-            if (list.size() > length){
+
+    public void add(String command) {
+        list.add(command);
+        if (list.size() > length) {
             list.remove(0);
         }
     }
-    public ArrayList<String> getList(){
-        return list;
-    }
+
+    //Returns history in a list format, from most recent to lest recent
     @Override
-    public String toString(){
+    public String toString() {
         StringBuilder builder = new StringBuilder();
 
-        for (int i = list.size()-1; i>=0; i--){
+        for (int i = list.size() - 1; i >= 0; i--) {
             builder.append(list.get(i)).append("\n");
         }
         return builder.toString();

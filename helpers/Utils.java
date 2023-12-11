@@ -1,113 +1,106 @@
 package textExcel.helpers;
-
 import textExcel.Constants;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 public class Utils {
-    public static boolean isDouble(String s){
+    //Method to check if a number is a double
+    public static boolean isDouble(String s) {
         try {
             Double.parseDouble(s);
             return true;
-        }catch (Exception e){
+        } catch (Exception e) {
             return false;
         }
     }
-    public static boolean isDouble(String s, String toRemove){
+    //Method to check if a number is a double after removing a string
+    public static boolean isDouble(String s, String toRemove) {
         try {
             s = s.replace(toRemove, "");
             Double.parseDouble(s);
             return true;
-        }catch (Exception e){
+        } catch (Exception e) {
             return false;
         }
     }
 
+
+    //Abbreviates text to fit within the number of cell spaces chosen by the user. Works with scientific notation and % and adds "..." if a value is cut off.
     public static String abbreviateText(String value) {
         StringBuilder toReturn = new StringBuilder();
         String suffix = "";
-        if (value.endsWith("%")) {
+        boolean isScientificNotation = value.matches(".*E[-+]?\\d+$");//Checks if value has a character, then  E and a number. If so, it is in scientific notation
+
+        if (value.endsWith("%")) {//If value ends with %, make it the suffix
             suffix = "%";
-            value = value.substring(0, value.length() - 1);
-        } else if (value.matches(".*E[-+]?\\d+$")) {
+            value = value.substring(0, value.length() - 1);//Then, remove the E + number from the value
+        } else if (isScientificNotation) {//If value is in scientific notation, make E + the number at the end the suffix
             int sciNotationEnding = value.lastIndexOf('E');
             suffix = value.substring(sciNotationEnding);
-            value = value.substring(0, sciNotationEnding);
+            value = value.substring(0, sciNotationEnding);//Then, remove the E + number from the value
         }
 
-        if (value.length() < Constants.CELL_SPACE) {
+        int effectiveLength = Constants.CELL_SPACE - suffix.length();
+
+        //append the value if it fits inside the cell space, otherwise truncate it.
+        if (value.length() + suffix.length() <= Constants.CELL_SPACE) {
             toReturn.append(value);
-            toReturn.append(suffix);
-            for (int i = 0; i < Constants.CELL_SPACE - value.length() - suffix.length(); i++) {
-                toReturn.append(" ");
-            }
-        } else if (value.length() > (Constants.CELL_SPACE - suffix.length())) {
-            if (!suffix.contains("E")){
-                toReturn.append(value, 0, Constants.CELL_SPACE - suffix.length()-3);
-            }
+        } else if (value.length() > effectiveLength) {
+            toReturn.append(value, 0, effectiveLength - 3);
             toReturn.append("...");
-            toReturn.append(suffix);
         } else {
             toReturn.append(value);
-            toReturn.append(suffix);
         }
+        toReturn.append(suffix);
 
+        //Adds more spaces if needed
+        toReturn.append(" ".repeat(Math.max(0, Constants.CELL_SPACE - toReturn.length())));
 
         return toReturn.toString();
     }
-    public static String formatText(String s){
+
+    public static String formatText(String s) {//Removes all spaces and makes all letters uppercase
         return s.replaceAll("\\s", "").toUpperCase();
     }
 
-    public static String getInput(Scanner scanner, List<String> inputOptions, String errorMessage){
-        while (true){
-            if (scanner.hasNextLine()){
+    public static String getInput(Scanner scanner, List<String> inputOptions, String errorMessage) {//Gets an inputOption from the user
+        while (true) {
+            if (scanner.hasNextLine()) {
                 String input = scanner.nextLine();
-                if (inputOptions.contains(formatText(input))){
+                if (inputOptions.contains(formatText(input))) {
                     return input;
                 }
             }
             System.out.println(errorMessage);
-//            scanner.nextLine();
         }
     }
-    public static int getInt(Scanner scanner, int lowerBound, int upperBound){
-        while (true){
-            if (scanner.hasNextInt()){
+
+
+    public static int getInt(Scanner scanner, int lowerBound) {//Gets an int higher than the lowerbound from the user
+        while (true) {
+            if (scanner.hasNextInt()) {
                 int i = scanner.nextInt();
-                if (i > lowerBound && i < upperBound){
-                    return i;
-                }
-                System.out.println("Input an int between " + lowerBound + " and " + upperBound + "!");
-                scanner.nextLine();
-            }
-        }
-    }
-    public static int getInt(Scanner scanner, int lowerBound){
-        while (true){
-            if (scanner.hasNextInt()){
-                int i = scanner.nextInt();
-                if (i > lowerBound){
+                if (i > lowerBound) {
                     return i;
                 }
             }
-                System.out.println("Input an int above " + lowerBound + "!");
-                scanner.nextLine();
+            System.out.println("Input an int above " + lowerBound + "!");
+            scanner.nextLine();
         }
     }
-    public static int getInt(Scanner scanner){
-        while (true){
-            if (scanner.hasNextInt()){
+
+    public static int getInt(Scanner scanner) {//Gets a positive nonzero int from the user
+        while (true) {
+            if (scanner.hasNextInt()) {
                 int i = scanner.nextInt();
-                if (i > 0){
+                if (i > 0) {
                     return i;
-                }else{
+                } else {
                     System.out.println("Input a valid positive nonzero int!");
                     scanner.nextLine();
                 }
-            }else{
+            } else {
                 System.out.println("Input a valid positive nonzero int!");
                 scanner.nextLine();
             }
@@ -115,10 +108,9 @@ public class Utils {
     }
 
 
-
-    public static void doOperation(List<String> commandAsString, char symbol, int i){
+    public static void doOperation(List<String> commandAsString, char symbol, int i) {//Does a certain operation on a list of strings.
         double newValue;
-        switch (symbol){
+        switch (symbol) {
             case '^':
                 newValue = Math.pow(Double.parseDouble(commandAsString.get(i - 1)), Double.parseDouble(commandAsString.get(i + 1)));
                 break;
@@ -143,28 +135,26 @@ public class Utils {
 
     }
 
+
+    //Turns a string value into a list of strings in preparation to perform operations (addition, subtraction, etc) on it.
     public static List<String> toList(String updatedValue) {
         List<String> commandAsString = new ArrayList<>();
 
         int j = -1;
-        boolean isInScientificNotation = false; // Flag to indicate we are currently reading a scientific notation number
+        boolean isInScientificNotation = false;
 
         for (int i = 0; i < updatedValue.length(); i++) {
             char currentChar = updatedValue.charAt(i);
 
-            // Check if the current character is a digit, a decimal point, or a part of the scientific notation
             if (Character.isDigit(currentChar) || currentChar == '.' ||
                     (isInScientificNotation && (currentChar == '-' || currentChar == '+')) ||
                     (!isInScientificNotation && (currentChar == 'E' || currentChar == 'e'))) {
 
                 if (currentChar == 'E' || currentChar == 'e') {
-                    isInScientificNotation = true; // We're starting to read a scientific notation number
+                    isInScientificNotation = true;
                 }
 
-                if (j == -1 ||
-                        (!Character.isDigit(updatedValue.charAt(i - 1)) &&
-                                updatedValue.charAt(i - 1) != '.' &&
-                                !isInScientificNotation)) {
+                if (j == -1 || (!Character.isDigit(updatedValue.charAt(i - 1)) && updatedValue.charAt(i - 1) != '.' && !isInScientificNotation)) {
                     commandAsString.add(String.valueOf(currentChar));
                     j++;
                 } else {
@@ -172,7 +162,7 @@ public class Utils {
                 }
             } else {
                 if (isInScientificNotation) {
-                    isInScientificNotation = false; // We've finished reading a scientific notation number
+                    isInScientificNotation = false;
                 }
                 commandAsString.add(String.valueOf(currentChar));
                 j++;

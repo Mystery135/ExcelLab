@@ -1,13 +1,13 @@
 package textExcel;
 
 public class SpreadsheetLocation implements Location {
-    private String loc;
-    private int row;
-    private int col;
+    private final int row;
+    private final int col;
+
+    //Converts a character and a number to a coordinate
     public SpreadsheetLocation(String loc){
-        this.loc = loc;
-        row = loc.toUpperCase().toCharArray()[0]-65;
-        col = Integer.parseInt(loc.substring(1))-1;
+        col = loc.toUpperCase().toCharArray()[0]-65;
+        row = Integer.parseInt(loc.substring(1))-1;
     }
 
     @Override

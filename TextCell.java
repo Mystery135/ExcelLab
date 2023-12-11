@@ -3,17 +3,17 @@ package textExcel;
 import textExcel.helpers.Utils;
 
 public class TextCell implements Cell{
-    private String value;
+    private final String value;
     public TextCell(String value){
         this.value = value;
     }
     @Override
-    public String abbreviatedCellText() {
+    public String abbreviatedCellText() {//Returns the abbreviated text
         return Utils.abbreviateText(value);
     }
 
     @Override
-    public String fullCellText() {
+    public String fullCellText() {//Returns the full text, with the quotation marks
         return "\"" + value + "\"";
     }
 }

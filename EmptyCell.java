@@ -1,15 +1,11 @@
 package textExcel;
 
-import org.w3c.dom.Text;
 
 public class EmptyCell implements Cell{
-    private String value;
+    private final String value;
     public EmptyCell(){
-        StringBuilder value = new StringBuilder();
-        for (int i = 0; i<Constants.CELL_SPACE; i++){
-            value.append(" ");
-        }
-        this.value = value.toString();
+        //Adds CELL_SPACE spaces to the value
+        this.value = " ".repeat(Math.max(0, Constants.CELL_SPACE));
     }
     @Override
     public String abbreviatedCellText() {
